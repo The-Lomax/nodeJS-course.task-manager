@@ -7,6 +7,8 @@ const sharp = require('sharp');
 const { sendWelcome, sendFarewell } = require('../emails/account');
 const router = express.Router();
 
+const emailNotifs = false;
+
 // read user profile
 router.get('/users/me', auth, async (req, res) => {
     res.send(req.user);
@@ -26,7 +28,7 @@ router.post('/users', async (req, res) => {
     try {
         await user.save();
         const token = await user.generateAuthToken();
-        sendWelcome(user.email, user.name);
+        if (emailNotifs) sendWelcome(user.email, user.name);
         res.status(201).send({ user, token });
     } catch (err) {
         res.status(400).send(err.message);
@@ -116,7 +118,7 @@ router.delete('/users/me', auth, async (req, res) => {
         // if (!user) return res.status(204).send({ "message": "User not found." });
 
         await req.user.remove();
-        sendFarewell(req.user.email, req.user.name);
+        if (emailNotifs) sendFarewell(req.user.email, req.user.name);
         res.send(req.user);
     } catch (err) {
         res.status(500).send(err.message);
